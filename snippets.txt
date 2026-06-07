@@ -1,0 +1,30 @@
+posts: list[dict] = [
+    {
+        "id": 1,
+        "author": "John Smith",
+        "title": "Why FastAPI is So Popular",
+        "content": "FastAPI offers high performance, easy validation, and automatic documentation which makes it very popular among developers.",
+        "date_posted": "April 22, 2025",
+    },
+    {
+        "id": 2,
+        "author": "Emily Watson",
+        "title": "Understanding REST APIs",
+        "content": "REST APIs allow different systems to communicate efficiently using standard HTTP methods.",
+        "date_posted": "April 23, 2025",
+    },
+    {
+        "id": 3,
+        "author": "Michael Brown",
+        "title": "FastAPI vs Flask",
+        "content": "FastAPI provides better performance and built-in validation compared to Flask, making it a strong choice for modern APIs.",
+        "date_posted": "April 24, 2025",
+    },
+    {
+        "id": 4,
+        "author": "Sarah Khan",
+        "title": "Async Programming in Python",
+        "content": "Async programming helps Python applications handle more requests efficiently, especially in web applications.",
+        "date_posted": "April 25, 2025",
+    },
+]
