@@ -20,7 +20,7 @@ async def send_email(to_email:str, subject:str, plain_text: str,html_content:str
     hostname = settings.mail_server, 
     port = settings.mail_port, 
     username = settings.mail_username if settings.mail_username else None,
-    password=settings.mail_password if settings.mail_password.get_secret_value() else None,
+    password=settings.mail_password.get_secret_value() if settings.mail_password.get_secret_value() else None,
     start_tls=settings.mail_use_tls)
 
 async def send_password_reset_email(to_email: str, username: str, token: str) -> None:
