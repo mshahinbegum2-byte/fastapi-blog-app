@@ -1,0 +1,50 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+env/
+venv/
+.venv/
+
+# Environment variables (critical to exclude)
+.env
+.env.*
+
+# Git
+.git/
+.gitignore
+
+# Logs
+*.log
+
+# Test / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE/editor
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Node (if frontend exists)
+node_modules/
+
+# Temporary files
+*.swp
+*.bak
+
+# Optional: exclude local SQLite DB (if used)
+*.db
+*.sqlite3
