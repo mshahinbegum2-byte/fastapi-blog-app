@@ -10,12 +10,13 @@ import models
 from datetime import timedelta, UTC, datetime
 from PIL import UnidentifiedImageError
 from starlette.concurrency import run_in_threadpool
-from image_utils import delete_profile_image, process_profile_image
+from image_utils import delete_profile_image, process_profile_image, upload_profile_image
 
 from auth import create_access_token,verify_access_token,hash_password,verify_password,oauth2_scheme, CurrentUser, generate_reset_token, hash_reset_token
 from config import settings
 from fastapi.security import OAuth2PasswordRequestForm
 from emails_util import send_password_reset_email
+from botocore.exceptions import ClientError
 
 router = APIRouter()
 
@@ -134,13 +135,13 @@ async def delete_user(user_id: int ,current_user : CurrentUser, db: Annotated[As
     await db.commit()
 
     if old_file_name:
-        delete_profile_image(old_file_name)
+        await delete_profile_image(old_file_name)
 
 #UPLOAD PROFILE PIC
 @router.patch("/{user_id}/picture",response_model=UserPrivate)
 async def uplaod_profile_picture(user_id:int, current_user : CurrentUser, db: Annotated[AsyncSession, Depends(get_db)],file: UploadFile = File(...)):
     if current_user.id != user_id:
-        raise HTTPException(status_code = status.HTTP_403_FORBIDDEN, detail = "Not authorized to delete this user") 
+        raise HTTPException(status_code = status.HTTP_403_FORBIDDEN, detail = "Not authorized to upload profile picture") 
     
     content = await file.read()
 
@@ -148,9 +149,18 @@ async def uplaod_profile_picture(user_id:int, current_user : CurrentUser, db: An
         raise HTTPException(status_code = status.HTTP_400_BAD_REQUEST, detail = f"file too large. Maximum size is {settings.max_upload_size_bytes//1024*1024}MB") 
     
     try:
-        new_filename = await run_in_threadpool(process_profile_image,content)
+        processed_bytes, new_filename = await run_in_threadpool(process_profile_image,content)
     except UnidentifiedImageError as err:
         raise HTTPException(status_code = status.HTTP_400_BAD_REQUEST, detail = "Invalid image. Please upload a valid image (JPEG,PNG,GIF,WebP).") from err
+
+    # Upload to S3 (also runs in threadpool via async wrapper)
+    try:
+        await upload_profile_image(processed_bytes, new_filename)
+    except ClientError as err:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to upload image. Please try again.",
+        ) from err
 
     old_file_name = current_user.image_file
     current_user.image_file = new_filename
@@ -158,7 +168,7 @@ async def uplaod_profile_picture(user_id:int, current_user : CurrentUser, db: An
     await db.refresh(current_user)
 
     if old_file_name:
-        delete_profile_image(old_file_name)
+        await delete_profile_image(old_file_name)
 
     return current_user
 
